@@ -18,7 +18,6 @@ app.get("/:timestamp", function (req, res) {
         d = new Date(parseInt(req.params.timestamp));
     }
     if (isNaN(d.getTime())) {
-        // d = new Date(); 
         res.json({ "error": "Invalid Date" });
     } else {
         res.json({ "unix": d.getTime(), "utc": d })

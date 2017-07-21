@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "description": "timestamp microservice",
   "repository": {
-    
+    "type": "git",
+    "url": "https://github.com/marigerr/microservice-practice-projects.git"
   },
   "main": "app.js",
-	"dependencies": {
-		"express": "^4.14.0",
-		"body-parser": "^1.15.2"
-	},
+  "dependencies": {
+    "express": "^4.14.0",
+    "body-parser": "^1.15.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "marigerr",
   "license": "ISC"
 }
