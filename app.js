@@ -27,6 +27,10 @@ app.get("/api/timestamp/:date_string?", function (req, res) {
     }
 })
 
+app.get("/api/whoami", function (req, res) {
+    res.json({"ip-address": req.ip, "language": req.headers["accept-language"], "software": req.headers["user-agent"]})
+})
+
 var port = 3000;
 app.listen(port, function () {
     console.log('Node is listening on port ' + port + '...')
