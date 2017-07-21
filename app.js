@@ -9,24 +9,22 @@ app.use(function (req, res, next) {
     next();
 })
 
-app.get("/:timestamp", function (req, res) {
+app.get("/api/timestamp/:date_string?", function (req, res) {
     var d;
-    var timeString = req.params.timestamp;
-    if (timeString.indexOf('-') > -1) {
-        d = new Date(timeString);
+    var date_string = req.params.date_string;
+    
+    if (typeof date_string == "undefined") {
+        d = new Date();    
+    } else if (date_string.indexOf('-') > -1) {
+        d = new Date(date_string);
     } else {
-        d = new Date(parseInt(req.params.timestamp));
+        d = new Date(parseInt(req.params.date_string));
     }
     if (isNaN(d.getTime())) {
         res.json({ "error": "Invalid Date" });
     } else {
-        res.json({ "unix": d.getTime(), "utc": d })
+        res.json({ "unix": d.getTime(), "utc": d.toLocaleString() })
     }
-})
-
-app.get("/", function (req, res) {
-    var d = new Date();
-    res.json({"unix" : d.getTime(), "utc": d});
 })
 
 var port = 3000;
