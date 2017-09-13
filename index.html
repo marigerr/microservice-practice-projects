@@ -12,13 +12,18 @@
   <h1>Micro-Service Projects</h1>
   <h3>Api Documentation</h3>
   <h4>Timestamp</h4>
-  <p>Returns Unix and UTC formatted Date</p>
+  <p>Returns Unix, UTC and locale formatted Date</p>
   <ul>
     <li> <strong>URL</strong> /api/timestamp/:date_string?</li>
     <li> <strong>Method</strong> GET</li>
-    <li> <strong>URL Params</strong> date_string = [string] Unix or UTC format. If date_string is provided, current date will
+    <li> <strong>URL Params</strong> date_string = [string] Unix or UTC format. <br>If no <i>date_string</i> is provided, current date will
       be returned</li>
   </ul>
+  <form action="/api/timestamp/" method="get">
+    Test Timestamp
+    <input type="text" name="date_string" value="1505313334801">
+    <input type="submit" value="Test">
+  </form>  
   <h4>Ip address & User Agent Lookup</h4>
   <p>Returns User's Ip address and User Agent Information</p>
   <ul>
@@ -26,6 +31,10 @@
     <li> <strong>Method</strong> GET</li>
     <li> <strong>URL Params</strong> None</li>
   </ul>
+  <form action="/api/whoami" method="get">
+    Test whoami
+    <input type="submit" value="Test">
+  </form>
   <h4>URL Shortener</h4>
   <p>Shortens Submitted URL</p>
   <ul>

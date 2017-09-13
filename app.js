@@ -1,9 +1,8 @@
-
-var express = require('express');
-var bodyParser = require('body-parser');
-var mongo = require('mongodb').MongoClient
-var url = 'mongodb://localhost:27017/apipractice'
-var app = express();
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongo = require('mongodb').MongoClient
+const app = express();
 
 app.use(function (req, res, next) {
   console.log(req.method + " " + req.path + " - " + req.ip);
@@ -20,21 +19,24 @@ app.get("/api/url-shortener", function (req, res) {
 
 // app.use(express.static(__dirname + '/public'))
 
-app.get("/api/timestamp/:date_string?", function (req, res) {
-  var d;
-  var date_string = req.params.date_string;
-
-  if (typeof date_string == "undefined") {
+app.get("/api/timestamp", function (req, res) {
+  // app.get("/api/timestamp/:date_string?", function (req, res) {
+  let d;
+  const date_string = req.query.date_string;
+  // const date_string = req.params.date_string;
+  console.log(typeof date_string);
+  console.log(date_string);
+  if (typeof date_string == "undefined" || date_string == "") {
     d = new Date();
   } else if (date_string.indexOf('-') > -1) {
     d = new Date(date_string);
   } else {
-    d = new Date(parseInt(req.params.date_string));
+    d = new Date(parseInt(req.query.date_string));
   }
   if (isNaN(d.getTime())) {
     res.json({ "error": "Invalid Date" });
   } else {
-    res.json({ "unix": d.getTime(), "utc": d.toLocaleString() })
+    res.json({ "unix": d.getTime(), "utc": d.toISOString(), "Locale string": d.toLocaleString() })
   }
 })
 
@@ -44,48 +46,101 @@ app.get("/api/whoami", function (req, res) {
 
 app.post("/api/shorturl/new", function (req, res) {
 
-  var originalUrl = req.body.url;
-  console.log(originalUrl);
-  // var shortenedUrlSuffix = getNextSequence("urlid");
-  // console.log(originalUrl, shortenedUrlSuffix);
+  const appUrl = 'https://example.glitch.me/'
+  const originalUrl = req.body.url;
 
-  mongo.connect(url, function (err, db) {
+  mongo.connect(process.env.DATABASE, (err, db) => {
 
     if (err) throw err;
 
-    function getNextSequence(name) {
-      var counters = db.collection("counters");
-      var ret = db.counters.findAndModify(
-        {
-          query: { _id: name },
-          update: { $inc: { seq: 1 } },
-          new: true
+    db.collection("counter").findAndModify(
+      { _id: "urlid" },
+      null,
+      { $inc: { seq: 1 } },
+      { upsert: true, new: true },
+      function (err, doc) {
+        if (err) console.log(err);
+        else {
+          console.log(doc.value);
+          db.collection("shorturls").findAndModify(
+            { url: originalUrl },
+            null,
+            {
+              $setOnInsert: {
+                url: originalUrl,
+                newurlsuffix: doc.value.seq
+              }
+            },
+            { upsert: true, new: true },
+            (err, doc) => {
+              console.log(doc.value);
+              res.json({ "original url": originalUrl, "shortened url": appUrl + doc.value.newurlsuffix })
+            }
+          )
         }
-      );
-      return ret.seq;
-    }
-
-
-    var coll = db.collection("shorturls");
-    coll.insert({
-      _id: getNextSequence("urlid"),
-      url: originalUrl
-    });
-    // console.log(JSON.stringify(obj));
-    db.close();
-
+      }
+    );
+    // db.close();
   })
-
-  res.json({ "original url": originalUrl })
-  // res.json({ "original url": originalUrl, "shortened url": shortenedUrlSuffix })
-
 })
 
-
-
-var port = 3000;
+const port = 3000;
 app.listen(port, function () {
   console.log('Node is listening on port ' + port + '...')
 });;
 
+
+
+/* need to fix url shortener so that it won't increment if not new
+
+    let newCount;
+    db.collection("shorturls").findOne(
+      { url: originalUrl },
+      function(err, doc) {
+        console.log(err);
+        if (doc) {
+          newCount =  await getNextSequence().then((done) => {return done});
+          console.log(newCount);
+        } 
+      }
+    )
+
+    function getNextSequence() {
+      db.collection("counter").findAndModify(
+        { _id: "urlid" },
+        null,
+        { $inc: { seq: 1 } },
+        { upsert: true, new: true },
+        function (err, doc) {
+          if (err) console.log(err);
+          else {
+            console.log(doc.value.seq);
+            return doc.value.seq;
+          }
+        }
+      )
+    }
+
+
+    db.collection("shorturls").findAndModify(
+      { url: originalUrl },
+      null,
+      {
+        $setOnInsert: {
+          url: originalUrl,
+          newurlsuffix: getNextSequence()
+        }
+      },
+      { upsert: true, new: true },
+      (err, doc) => {
+        // console.log(doc.value);
+        res.json({ "original url": doc.value })
+        // return cb(null, doc.value);
+      }
+      // db.close();
+    )
+  }
+);
+
+*/
 
