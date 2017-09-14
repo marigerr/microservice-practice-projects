@@ -1,0 +1,65 @@
+doctype html
+html(lang='en')
+  head
+    title
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href='/public/style.css')
+  body
+    h1 Micro-Service Projects
+    h3 Api Documentation
+    h4 Timestamp
+    p Returns Unix, UTC and locale formatted Date
+    ul
+      li
+        strong URL
+        |  /api/timestamp/date_string=1505313334801
+      li
+        strong Method
+        |  GET
+      li
+        strong URL Params
+        |  date_string : string in Unix or UTC format
+        br
+        | If no date_string
+        |  is provided, current date will
+        |       be returned
+    form(action='/api/timestamp/', method='get')
+      strong| Test Timestamp  
+      input(type='text', name='date_string', value='1505313334801')
+      input(type='submit', value='Test')
+    h4 Ip address & User Agent Lookup
+    p Returns User's Ip address and User Agent Information
+    ul
+      li
+        strong URL
+        |  /api/whoami
+      li
+        strong Method
+        |  GET
+      li
+        strong URL Params
+        |  None
+    form(action='/api/whoami', method='get')
+      strong| Test Ip lookup  
+      input(type='submit', value='Test')
+    h4 URL Shortener
+    p Shortens Submitted URL
+    ul
+      li
+        strong URL
+        |  /api/shorturl/new
+      li
+        strong Method
+        |  POST
+      li
+        strong Request body parameter :  
+        |  url: string
+    form(action='/api/shorturl/new', method='post' class='inline')
+      strong| Test Url Shortener 
+      input(type='text', name='url', value='')
+      input(type='submit', value='Submit')
+    if shortenedlink
+      span 
+        strong Shortened Link:  
+      a(href=shortenedlink target="_blank") #{shortenedlink}

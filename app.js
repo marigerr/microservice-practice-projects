@@ -4,28 +4,20 @@ const bodyParser = require('body-parser');
 const mongo = require('mongodb').MongoClient
 const app = express();
 
+app.set('view engine', 'pug')
+app.use('/public', express.static(process.cwd() + '/public'));
 app.use(function (req, res, next) {
-  console.log(req.method + " " + req.path + " - " + req.ip);
+  // console.log(req.method + " " + req.path + " - " + req.ip);
   next();
 }, bodyParser.urlencoded({ extended: false }))
 
 app.get("/", function (req, res) {
-  res.sendFile(__dirname + '/index.html')
+  res.render('index.pug');
 })
-
-app.get("/api/url-shortener", function (req, res) {
-  res.sendFile(__dirname + '/url-shorten.html')
-})
-
-// app.use(express.static(__dirname + '/public'))
 
 app.get("/api/timestamp", function (req, res) {
-  // app.get("/api/timestamp/:date_string?", function (req, res) {
   let d;
   const date_string = req.query.date_string;
-  // const date_string = req.params.date_string;
-  console.log(typeof date_string);
-  console.log(date_string);
   if (typeof date_string == "undefined" || date_string == "") {
     d = new Date();
   } else if (date_string.indexOf('-') > -1) {
@@ -46,7 +38,7 @@ app.get("/api/whoami", function (req, res) {
 
 app.post("/api/shorturl/new", function (req, res) {
 
-  const appUrl = 'https://example.glitch.me/'
+  const appUrl = process.env.host + '/su/'
   const originalUrl = req.body.url;
 
   mongo.connect(process.env.DATABASE, (err, db) => {
@@ -61,7 +53,6 @@ app.post("/api/shorturl/new", function (req, res) {
       function (err, doc) {
         if (err) console.log(err);
         else {
-          console.log(doc.value);
           db.collection("shorturls").findAndModify(
             { url: originalUrl },
             null,
@@ -73,8 +64,8 @@ app.post("/api/shorturl/new", function (req, res) {
             },
             { upsert: true, new: true },
             (err, doc) => {
-              console.log(doc.value);
-              res.json({ "original url": originalUrl, "shortened url": appUrl + doc.value.newurlsuffix })
+              const shortenedlink = appUrl + doc.value.newurlsuffix;
+              res.render('index.pug', { shortenedlink: shortenedlink });
             }
           )
         }
@@ -83,6 +74,19 @@ app.post("/api/shorturl/new", function (req, res) {
     // db.close();
   })
 })
+
+app.get("/su/:urlsuffix", function (req, res) {
+
+  const urlsuffix = parseInt(req.params.urlsuffix);
+  mongo.connect(process.env.DATABASE, (err, db) => {
+    db.collection("shorturls").findOne(
+      { newurlsuffix: urlsuffix },
+      (err, doc) => {
+        res.redirect(doc.url)
+      }
+    )    
+  });
+});
 
 const port = 3000;
 app.listen(port, function () {
